@@ -109,7 +109,11 @@ curl http://localhost:19089/v1/health
 
 Use MCP tools directly in Claude Code - shows up in `/mcp` command.
 
-#### Step 1: Configure MCP Server
+---
+
+#### Option A: Full Offline (Local Ollama)
+
+**Requirements:** Docker running with `docker compose up -d`
 
 Add to VS Code `settings.json` (Cmd+Shift+P → "Preferences: Open User Settings (JSON)"):
 
@@ -133,18 +137,97 @@ Add to VS Code `settings.json` (Cmd+Shift+P → "Preferences: Open User Settings
 }
 ```
 
-> ⚠️ **Important:** Replace `/full/path/to/allan-mcp-memory-code` with the actual absolute path.
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `FALKORDB_URI` | `redis://localhost:6380` | FalkorDB from Docker |
+| `LLM_API_URL` | `http://localhost:11435/v1` | Ollama from Docker |
+| `LLM_API_KEY` | `ollama` | Any value (Ollama ignores it) |
+| `LLM_MODEL` | `qwen2.5:7b-instruct` | Downloaded by Docker |
+| `EMBEDDER_API_URL` | `http://localhost:11435/v1` | Same Ollama |
+| `EMBEDDER_API_KEY` | `ollama` | Any value |
+| `EMBEDDER_MODEL` | `nomic-embed-text` | Downloaded by Docker |
 
-#### Step 2: Restart Claude Code & Verify
+> 💡 **No API keys needed!** Just run `docker compose up -d` first.
 
-1. Restart VS Code completely
-2. Type `/mcp` in Claude Code chat
-3. You should see `allan-memory` with 5 tools:
-   - `add_memory` - Store knowledge
-   - `search_nodes` - Search entities
-   - `search_facts` - Search relationships
-   - `get_episodes` - List episodes
-   - `delete_episode` - Delete episode
+---
+
+#### Option B: Cloud (OpenRouter) - Low Resource
+
+**Requirements:** Only FalkorDB Docker + OpenRouter API key
+
+```bash
+# Start only FalkorDB
+docker compose up falkordb -d
+```
+
+Add to VS Code `settings.json`:
+
+```json
+{
+  "claude.mcpServers": {
+    "allan-memory": {
+      "command": "node",
+      "args": ["/full/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
+      "env": {
+        "FALKORDB_URI": "redis://localhost:6380",
+        "LLM_API_URL": "https://openrouter.ai/api/v1",
+        "LLM_API_KEY": "sk-or-v1-your-key-here",
+        "LLM_MODEL": "qwen/qwen-2.5-7b-instruct",
+        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
+        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
+        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
+      }
+    }
+  }
+}
+```
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `FALKORDB_URI` | `redis://localhost:6380` | FalkorDB from Docker |
+| `LLM_API_URL` | `https://openrouter.ai/api/v1` | OpenRouter API |
+| `LLM_API_KEY` | `sk-or-v1-xxx` | **Required!** Get from openrouter.ai |
+| `LLM_MODEL` | `qwen/qwen-2.5-7b-instruct` | ~$0.003/hour |
+| `EMBEDDER_API_URL` | `https://openrouter.ai/api/v1` | OpenRouter API |
+| `EMBEDDER_API_KEY` | `sk-or-v1-xxx` | Same key |
+| `EMBEDDER_MODEL` | `openai/text-embedding-3-small` | OpenAI embedding |
+
+> ⚠️ **API key required!** Get from [openrouter.ai](https://openrouter.ai)
+
+---
+
+#### Option C: Hybrid (Local Ollama + Cloud Embedding)
+
+**Use case:** Save RAM by using cloud embeddings only
+
+```json
+{
+  "claude.mcpServers": {
+    "allan-memory": {
+      "command": "node",
+      "args": ["/full/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
+      "env": {
+        "FALKORDB_URI": "redis://localhost:6380",
+        "LLM_API_URL": "http://localhost:11435/v1",
+        "LLM_API_KEY": "ollama",
+        "LLM_MODEL": "qwen2.5:7b-instruct",
+        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
+        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
+        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
+      }
+    }
+  }
+}
+```
+
+---
+
+#### Verify Installation
+
+1. **Replace path:** Change `/full/path/to/allan-mcp-memory-code` to your actual path
+2. **Restart VS Code** completely
+3. Type `/mcp` in Claude Code chat
+4. You should see `allan-memory` with 5 tools
 
 #### Available MCP Tools
 
@@ -220,6 +303,7 @@ After editing settings, **restart Claude Code completely** for changes to take e
 
 Add to Cline MCP settings (`cline_mcp_settings.json`):
 
+**Local (Ollama):**
 ```json
 {
   "mcpServers": {
@@ -229,9 +313,32 @@ Add to Cline MCP settings (`cline_mcp_settings.json`):
       "env": {
         "FALKORDB_URI": "redis://localhost:6380",
         "LLM_API_URL": "http://localhost:11435/v1",
+        "LLM_API_KEY": "ollama",
         "LLM_MODEL": "qwen2.5:7b-instruct",
         "EMBEDDER_API_URL": "http://localhost:11435/v1",
+        "EMBEDDER_API_KEY": "ollama",
         "EMBEDDER_MODEL": "nomic-embed-text"
+      }
+    }
+  }
+}
+```
+
+**Cloud (OpenRouter):**
+```json
+{
+  "mcpServers": {
+    "allan-memory": {
+      "command": "node",
+      "args": ["/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
+      "env": {
+        "FALKORDB_URI": "redis://localhost:6380",
+        "LLM_API_URL": "https://openrouter.ai/api/v1",
+        "LLM_API_KEY": "sk-or-v1-your-key-here",
+        "LLM_MODEL": "qwen/qwen-2.5-7b-instruct",
+        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
+        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
+        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
       }
     }
   }
@@ -244,6 +351,7 @@ Add to Cline MCP settings (`cline_mcp_settings.json`):
 
 Add to Kilo Code MCP settings:
 
+**Local (Ollama):**
 ```json
 {
   "servers": {
@@ -254,9 +362,33 @@ Add to Kilo Code MCP settings:
       "env": {
         "FALKORDB_URI": "redis://localhost:6380",
         "LLM_API_URL": "http://localhost:11435/v1",
+        "LLM_API_KEY": "ollama",
         "LLM_MODEL": "qwen2.5:7b-instruct",
         "EMBEDDER_API_URL": "http://localhost:11435/v1",
+        "EMBEDDER_API_KEY": "ollama",
         "EMBEDDER_MODEL": "nomic-embed-text"
+      }
+    }
+  }
+}
+```
+
+**Cloud (OpenRouter):**
+```json
+{
+  "servers": {
+    "allan-memory": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
+      "env": {
+        "FALKORDB_URI": "redis://localhost:6380",
+        "LLM_API_URL": "https://openrouter.ai/api/v1",
+        "LLM_API_KEY": "sk-or-v1-your-key-here",
+        "LLM_MODEL": "qwen/qwen-2.5-7b-instruct",
+        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
+        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
+        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
       }
     }
   }
