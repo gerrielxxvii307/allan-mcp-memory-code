@@ -305,100 +305,81 @@ Add to `~/.claude/settings.json`:
 Add to your `~/.claude/CLAUDE.md` to make Claude **auto-use** memory tools:
 
 ```markdown
-## Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have MCP tools for persistent memory across sessions. **USE THEM PROACTIVELY!**
+You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
 
-### 🔍 AUTO-READ (search_nodes/search_facts) - Do this FIRST:
-- **Architecture questions** → Search memory before answering
-- **"How does X work?"** → Search for existing knowledge
-- **Code review** → Search for known patterns/issues
-- **Starting work on project** → Search for stored context
-- **Debugging** → Search for similar past issues
+## Tools
+- `search_nodes` — find entities
+- `search_facts` — find relationships
+- `add_memory` — store (USE LIBERALLY)
+- `get_episodes` — list recent
+- `delete_episode` — remove stale
 
-### 💾 AUTO-WRITE (add_memory) - Do this after:
-- **Discovering architecture patterns** → Store immediately
-- **Finding root cause of bugs** → Remember for future
-- **Learning project conventions** → Save for consistency
-- **User says "remember"** → Always store
-- **Completing complex tasks** → Summarize learnings
+## Hard Rules
 
-### Available MCP Tools:
-| Tool | When to Use |
-|------|-------------|
-| `search_nodes` | Find entities (people, tech, concepts) |
-| `search_facts` | Find relationships between entities |
-| `add_memory` | Store new knowledge |
-| `get_episodes` | List recent memory entries |
-| `delete_episode` | Remove outdated info |
+**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case). No exceptions.
 
-### Usage Pattern:
-1. **START of conversation**: `search_nodes` for project context
-2. **Before answering**: `search_nodes`/`search_facts` to check existing knowledge
-3. **After learning**: `add_memory` to store insights
-4. **End of session**: `add_memory` to summarize what was done
+**Search before answer:** any question about code, architecture, project state, past decisions, or bugs → `search_nodes` FIRST. Empty result = explore, then save what you find.
 
-### IMPORTANT Rules:
-- ✅ ALWAYS search before answering codebase questions
-- ✅ WHEN search node or project not exist then create archictecture summary
-- ✅ ALWAYS store architectural discoveries
-- ✅ Use project name as `group_id` for namespacing
-- ❌ DON'T store trivial/temporary information
-- ❌ DON'T duplicate existing knowledge (search first!)
+**Write after every action.** Not "after the task" — after EACH action below. One action = one `add_memory` call.
 
-### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+| Action | Save (compressed, 1-3 lines) |
+|---|---|
+| bash/shell command run | command + key output + what it revealed |
+| grep/find/search | pattern + matches + files touched |
+| ls / tree / explore dir | dir path + structure summary |
+| read file | path + purpose + key exports/functions |
+| read function | name + params + return + what it does |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan, verbatim or summarized |
+| task completed | what + how + gotchas |
+| API/route discovered | method + path + req/resp shape |
+| pattern/convention learned | name + when to apply |
+| architecture insight | components + data flow |
+| user says "remember"/"ingat" | save exactly as stated |
 
-**ALWAYS save to memory when:**
+## Compression Rules (CRITICAL)
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| **Reading a file** | File purpose, key exports, dependencies |
-| **Reading a function** | Function name, purpose, params, return type |
-| **Reading a module** | Module structure, exports, relationships |
-| **Conversation compacting** | Full session summary before compaction |
-| **Understanding architecture** | Component relationships, data flow |
-| **Finding bugs** | Root cause, fix applied, prevention tips |
-| **Learning patterns** | Pattern name, when to use, example |
-| **Completing tasks** | What was done, decisions made, gotchas |
+Memory entries are short, factual, queryable. NOT essays.
 
-### 🚀 SAVE AFTER EVERY ACTION
+- **Max 5 lines per entry.** If longer, split into multiple `add_memory` calls.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go, validates via Redis session store."
+- **Drop filler:** no "I discovered", "it turns out", "interestingly". Just the fact.
+- **Include identifiers:** file paths, function names, route paths, error codes — always.
+- **Code snippets:** only if <10 lines AND essential. Otherwise describe + cite path.
+- **One concept per entry.** Don't bundle "auth + db + routing" into one memory.
 
-**The rule is simple: DO something → SAVE it**
+## Save Cadence (Aggressive)
 
-| Action | Immediately Save |
-|--------|------------------|
-| **Run bash/terminal command** | Command output, what was discovered |
-| **List directory structure** | Project structure summary |
-| **Explore/investigate code** | Full exploration findings |
-| **Create a plan** | The plan itself for future reference |
-| **Find files with grep/search** | What was found, file locations |
-| **Read any code file** | File purpose, exports, key logic |
-| **Debug/troubleshoot** | Problem, investigation steps, solution |
-| **Complete any task** | What was done, how, any gotchas |
-| **Learn project conventions** | Naming, patterns, folder structure |
-| **Discover API endpoints** | Routes, methods, request/response format |
-
-**Flow:**
 ```
-1. User asks about project
-2. search_nodes → check if project exists
-3. If empty → Explore project → SAVE structure immediately
-4. Do bash/grep/read → SAVE findings
-5. Create plan → SAVE plan
-6. Execute plan → SAVE results
-7. Finish task → SAVE summary
+explore → save → explore → save → plan → save → execute → save → done → save
 ```
 
-**Format for saving:**
-- `name`: Brief title (e.g., "vyber-html project structure", "login-implementation")
-- `episode_body`: Detailed knowledge in markdown
-- `group_id`: Project/repo name for namespacing
+Not:
+```
+explore → explore → explore → execute → execute → (forget to save) → done
+```
 
-**Example saves:**
-- After `ls` command → Save: "vyber-html has /src, /plans, /en directories..."
-- After grep for login → Save: "Login in manager.html lines 133-1538, uses Google OAuth..."
-- After reading file → Save: "manager.html is main landing page, has mobile menu, CTA sections..."
-- After exploring → Save: "vyber-html: static HTML site, no framework, uses CSS variables..."
+Every 3-5 tool calls, ask yourself: "Did I save what I just learned?" If no → save NOW before next action.
+
+## Session Boundaries
+
+- **Start:** `search_nodes` for project context. If empty for active project → flag it, explore, build baseline.
+- **Mid-session:** save incrementally (per rules above), don't batch.
+- **Before compaction:** save full session summary (decisions + open threads + next steps).
+- **End:** save outcome summary with `group_id`.
+
+## Don't Save
+- Trivial confirmations ("user said hi")
+- Exact duplicates (search first if unsure)
+- Transient state (current cursor position, scratch values)
+- Sensitive data (keys, tokens, passwords, full credentials)
+
+## Failure Mode to Avoid
+
+The #1 failure: doing 10 bash/grep/read calls in a row, then writing one giant summary at the end. This loses granularity and skips facts. **Save per action, not per task.**
 ```
 
 #### Step 3: Restart Claude Code
@@ -495,47 +476,48 @@ Add to Cline MCP settings (`cline_mcp_settings.json`):
 Go to **Cline Settings → Custom Instructions** and add:
 
 ```markdown
-## Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
+You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
 
-### AUTO-READ (search_nodes) - Do this FIRST:
-- Architecture questions → Search memory before answering
-- "How does X work?" → Search for existing knowledge
-- Code review → Search for known patterns
-- Starting work on project → Search for stored context
+## Tools
+- `search_nodes` — find entities
+- `search_facts` — find relationships  
+- `add_memory` — store (USE LIBERALLY)
+- `get_episodes` — list recent
+- `delete_episode` — remove stale
 
-### AUTO-WRITE (add_memory) - Do this after:
-- Discovering architecture patterns → Store immediately
-- Finding root cause of bugs → Remember for future
-- Learning project conventions → Save for consistency
-- User says "remember" → Always store
+## Hard Rules
 
-### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
 
-### 🚀 SAVE AFTER EVERY ACTION
+**Write after every action.** One action = one `add_memory` call.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| ls/tree/explore | dir path + structure summary |
+| read file | path + purpose + key exports |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan summarized |
+| task completed | what + how + gotchas |
 
-**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+## Compression Rules
 
-### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
+- **Max 5 lines per entry.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
+
+## Save Cadence
+
+`explore → save → explore → save → plan → save → execute → save → done → save`
+
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 ```
 
 ---
@@ -595,47 +577,48 @@ Add to Kilo Code MCP settings:
 Go to **Kilo Code Settings → Custom Instructions** and add:
 
 ```markdown
-## Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
+You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
 
-### AUTO-READ (search_nodes) - Do this FIRST:
-- Architecture questions → Search memory before answering
-- "How does X work?" → Search for existing knowledge
-- Code review → Search for known patterns
-- Starting work on project → Search for stored context
+## Tools
+- `search_nodes` — find entities
+- `search_facts` — find relationships  
+- `add_memory` — store (USE LIBERALLY)
+- `get_episodes` — list recent
+- `delete_episode` — remove stale
 
-### AUTO-WRITE (add_memory) - Do this after:
-- Discovering architecture patterns → Store immediately
-- Finding root cause of bugs → Remember for future
-- Learning project conventions → Save for consistency
-- User says "remember" → Always store
+## Hard Rules
 
-### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
 
-### 🚀 SAVE AFTER EVERY ACTION
+**Write after every action.** One action = one `add_memory` call.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| ls/tree/explore | dir path + structure summary |
+| read file | path + purpose + key exports |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan summarized |
+| task completed | what + how + gotchas |
 
-**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+## Compression Rules
 
-### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
+- **Max 5 lines per entry.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
+
+## Save Cadence
+
+`explore → save → explore → save → plan → save → execute → save → done → save`
+
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 ```
 
 ---
@@ -693,47 +676,48 @@ Add to Windsurf MCP settings (`~/.codeium/windsurf/mcp_config.json`):
 Go to **Windsurf Settings → AI Rules → Global AI Rules** and add:
 
 ```markdown
-## Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
+You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
 
-### AUTO-READ (search_nodes) - Do this FIRST:
-- Architecture questions → Search memory before answering
-- "How does X work?" → Search for existing knowledge
-- Code review → Search for known patterns
-- Starting work on project → Search for stored context
+## Tools
+- `search_nodes` — find entities
+- `search_facts` — find relationships  
+- `add_memory` — store (USE LIBERALLY)
+- `get_episodes` — list recent
+- `delete_episode` — remove stale
 
-### AUTO-WRITE (add_memory) - Do this after:
-- Discovering architecture patterns → Store immediately
-- Finding root cause of bugs → Remember for future
-- Learning project conventions → Save for consistency
-- User says "remember" → Always store
+## Hard Rules
 
-### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
 
-### 🚀 SAVE AFTER EVERY ACTION
+**Write after every action.** One action = one `add_memory` call.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| ls/tree/explore | dir path + structure summary |
+| read file | path + purpose + key exports |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan summarized |
+| task completed | what + how + gotchas |
 
-**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+## Compression Rules
 
-### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
+- **Max 5 lines per entry.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
+
+## Save Cadence
+
+`explore → save → explore → save → plan → save → execute → save → done → save`
+
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 ```
 
 ---
@@ -743,61 +727,45 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 Create `.cursorrules` in your project root:
 
 ```markdown
-# Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have access to a knowledge graph API at http://localhost:19089.
-**USE IT PROACTIVELY!**
+API at http://localhost:19089. **Default: WRITE.** If unsure whether to save, save.
 
-## AUTO-READ - Do this FIRST:
-- Architecture questions → Search memory before answering
-- "How does X work?" → Search for existing knowledge  
-- Code review → Search for known patterns
-- Starting work on project → Search for stored context
-- Debugging → Search for similar past issues
+## Commands
+- Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"<topic>","limit":5}'`
+- Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'`
 
-### Search Command:
-curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"<topic>","limit":5}'
+## Hard Rules
 
-## AUTO-WRITE - Do this after:
-- Discovering architecture patterns → Store immediately
-- Finding root cause of bugs → Remember for future
-- Learning project conventions → Save for consistency
-- User says "remember" → Always store
-- Completing complex tasks → Summarize learnings
+**Namespacing:** every store MUST include `group_id` = project name (kebab-case).
 
-### Store Command:
-curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'
+**Search before answer:** any question about code/architecture → search FIRST. Empty = explore, then save.
 
-## IMPORTANT Rules:
-- ALWAYS search before answering codebase questions
-- ALWAYS store architectural discoveries
-- Use project name as group_id for namespacing
-- DON'T store trivial/temporary information
-- DON'T duplicate existing knowledge (search first!)
+**Write after every action.** One action = one store call.
 
-## 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| ls/tree/explore | dir path + structure summary |
+| read file | path + purpose + key exports |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan summarized |
+| task completed | what + how + gotchas |
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+## Compression Rules
 
-## 🚀 SAVE AFTER EVERY ACTION
+- **Max 5 lines per entry.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+## Save Cadence
 
-**Flow:** search → if empty → explore → SAVE → do task → SAVE
+`explore → save → explore → save → plan → save → execute → save → done → save`
+
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 ```
 
 ---
@@ -830,41 +798,33 @@ Add to `~/.continue/config.json`:
 Add to `~/.continue/config.json` under `models[].systemMessage`:
 
 ```markdown
-## Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have access to @Allan Memory context provider. **USE IT PROACTIVELY!**
+API at http://localhost:19089. **Default: WRITE.** If unsure whether to save, save.
 
-### AUTO-READ - Do this FIRST:
-- Architecture questions → Use @Allan Memory before answering
-- "How does X work?" → Search for existing knowledge
-- Code review → Search for known patterns
+## Commands
+- Search: Use @Allan Memory context provider
+- Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'`
 
-### AUTO-WRITE - Do this after (via terminal curl):
-curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'
+## Hard Rules
 
-### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+**Namespacing:** every store MUST include `group_id` = project name (kebab-case).
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+**Search before answer:** any question about code/architecture → @Allan Memory FIRST. Empty = explore, then save.
 
-### 🚀 SAVE AFTER EVERY ACTION
+**Write after every action.** One action = one store call.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| read file | path + purpose + key exports |
+| debug session | symptom + root cause + fix |
+| task completed | what + how + gotchas |
 
-**Flow:** search → if empty → explore → SAVE → do task → SAVE
+## Compression: Max 5 lines. Subject + verb + object. Drop filler. Include identifiers.
+
+## Save Cadence: `explore → save → explore → save → plan → save → execute → save`
 ```
 
 ---
@@ -874,59 +834,45 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 Create `.github/copilot-instructions.md`:
 
 ```markdown
-# Knowledge Graph Memory (Allan Memory)
+# Allan Memory (Graphiti MCP)
 
-You have access to a knowledge graph API at http://localhost:19089.
-**USE IT PROACTIVELY!**
+API at http://localhost:19089. **Default: WRITE.** If unsure whether to save, save.
 
-## AUTO-READ - Do this FIRST:
-- Architecture questions → Search memory before answering
-- "How does X work?" → Search for existing knowledge
-- Code review → Search for known patterns
-- Starting work on project → Search for stored context
-- Debugging → Search for similar past issues
+## Commands
+- Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"<topic>","limit":5}'`
+- Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'`
 
-### Search Command:
-curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"<topic>","limit":5}'
+## Hard Rules
 
-## AUTO-WRITE - Do this after:
-- Discovering architecture patterns → Store immediately
-- Finding root cause of bugs → Remember for future  
-- Learning project conventions → Save for consistency
-- User says "remember" → Always store
-- Completing complex tasks → Summarize learnings
+**Namespacing:** every store MUST include `group_id` = project name (kebab-case).
 
-### Store Command:
-curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'
+**Search before answer:** any question about code/architecture → search FIRST. Empty = explore, then save.
 
-## IMPORTANT Rules:
-- ALWAYS search before answering codebase questions
-- ALWAYS store architectural discoveries  
-- Use project name as group_id for namespacing
-- DON'T store trivial/temporary information
-- DON'T duplicate existing knowledge (search first!)
+**Write after every action.** One action = one store call.
 
-## 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+| Action | Save (1-3 lines) |
+|---|---|
+| bash/shell command | command + output + what it revealed |
+| grep/find/search | pattern + matches + files |
+| ls/tree/explore | dir path + structure summary |
+| read file | path + purpose + key exports |
+| edit/create file | path + what changed + why |
+| debug session | symptom + root cause + fix |
+| plan created | the plan summarized |
+| task completed | what + how + gotchas |
 
-| Trigger Event | What to Save |
-|---------------|--------------|
-| Reading a file | File purpose, key exports, dependencies |
-| Reading a function | Function name, purpose, params, return type |
-| Reading a module | Module structure, exports, relationships |
-| Conversation compacting | Full session summary before compaction |
-| Understanding architecture | Component relationships, data flow |
-| Finding bugs | Root cause, fix applied, prevention tips |
-| Completing tasks | What was done, decisions made, gotchas |
+## Compression Rules
 
-## 🚀 SAVE AFTER EVERY ACTION
+- **Max 5 lines per entry.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
 
-**DO something → SAVE it:**
-- Run bash/terminal → Save output & findings
-- List directories → Save project structure  
-- Explore/investigate → Save full findings
-- Create plan → Save the plan
-- Search/grep files → Save what was found
-- Debug/troubleshoot → Save problem & solution
+## Save Cadence
+
+`explore → save → explore → save → plan → save → execute → save → done → save`
+
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 
 **Flow:** search → if empty → explore → SAVE → do task → SAVE
 ```
