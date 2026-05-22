@@ -361,15 +361,44 @@ You have MCP tools for persistent memory across sessions. **USE THEM PROACTIVELY
 | **Learning patterns** | Pattern name, when to use, example |
 | **Completing tasks** | What was done, decisions made, gotchas |
 
+### 🚀 SAVE AFTER EVERY ACTION
+
+**The rule is simple: DO something → SAVE it**
+
+| Action | Immediately Save |
+|--------|------------------|
+| **Run bash/terminal command** | Command output, what was discovered |
+| **List directory structure** | Project structure summary |
+| **Explore/investigate code** | Full exploration findings |
+| **Create a plan** | The plan itself for future reference |
+| **Find files with grep/search** | What was found, file locations |
+| **Read any code file** | File purpose, exports, key logic |
+| **Debug/troubleshoot** | Problem, investigation steps, solution |
+| **Complete any task** | What was done, how, any gotchas |
+| **Learn project conventions** | Naming, patterns, folder structure |
+| **Discover API endpoints** | Routes, methods, request/response format |
+
+**Flow:**
+```
+1. User asks about project
+2. search_nodes → check if project exists
+3. If empty → Explore project → SAVE structure immediately
+4. Do bash/grep/read → SAVE findings
+5. Create plan → SAVE plan
+6. Execute plan → SAVE results
+7. Finish task → SAVE summary
+```
+
 **Format for saving:**
-- `name`: Brief title (e.g., "auth-service functions", "user-model schema")
+- `name`: Brief title (e.g., "vyber-html project structure", "login-implementation")
 - `episode_body`: Detailed knowledge in markdown
 - `group_id`: Project/repo name for namespacing
 
 **Example saves:**
-- After reading `UserService.js` → Save: "UserService handles auth, CRUD, has 5 methods..."
-- After reading `database/` module → Save: "Database module uses Prisma, has models for..."
-- Before compaction → Save: "Session summary: Fixed auth bug, refactored API..."
+- After `ls` command → Save: "vyber-html has /src, /plans, /en directories..."
+- After grep for login → Save: "Login in manager.html lines 133-1538, uses Google OAuth..."
+- After reading file → Save: "manager.html is main landing page, has mobile menu, CTA sections..."
+- After exploring → Save: "vyber-html: static HTML site, no framework, uses CSS variables..."
 ```
 
 #### Step 3: Restart Claude Code
@@ -494,6 +523,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
 
+### 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -582,6 +623,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
 
+### 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -668,6 +721,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
 
+### 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search_nodes → if empty → explore → SAVE → do task → SAVE
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -721,6 +786,18 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 | Understanding architecture | Component relationships, data flow |
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
+
+## 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search → if empty → explore → SAVE → do task → SAVE
 ```
 
 ---
@@ -776,6 +853,18 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 | Understanding architecture | Component relationships, data flow |
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
+
+### 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search → if empty → explore → SAVE → do task → SAVE
 ```
 
 ---
@@ -828,6 +917,18 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 | Understanding architecture | Component relationships, data flow |
 | Finding bugs | Root cause, fix applied, prevention tips |
 | Completing tasks | What was done, decisions made, gotchas |
+
+## 🚀 SAVE AFTER EVERY ACTION
+
+**DO something → SAVE it:**
+- Run bash/terminal → Save output & findings
+- List directories → Save project structure  
+- Explore/investigate → Save full findings
+- Create plan → Save the plan
+- Search/grep files → Save what was found
+- Debug/troubleshoot → Save problem & solution
+
+**Flow:** search → if empty → explore → SAVE → do task → SAVE
 ```
 
 ---
