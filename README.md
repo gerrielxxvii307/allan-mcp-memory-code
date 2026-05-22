@@ -105,13 +105,66 @@ curl http://localhost:19089/v1/health
 
 ## Integration
 
-### Claude Code (No Permission Popup)
+### Claude Code (MCP Server) ⭐ Recommended
 
-Configure Claude Code to **auto-approve** curl commands for Allan Memory API.
+Use MCP tools directly in Claude Code - shows up in `/mcp` command.
+
+#### Step 1: Configure MCP Server
+
+Add to VS Code `settings.json` (Cmd+Shift+P → "Preferences: Open User Settings (JSON)"):
+
+```json
+{
+  "claude.mcpServers": {
+    "allan-memory": {
+      "command": "node",
+      "args": ["/full/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
+      "env": {
+        "FALKORDB_URI": "redis://localhost:6380",
+        "LLM_API_URL": "http://localhost:11435/v1",
+        "LLM_API_KEY": "ollama",
+        "LLM_MODEL": "qwen2.5:7b-instruct",
+        "EMBEDDER_API_URL": "http://localhost:11435/v1",
+        "EMBEDDER_API_KEY": "ollama",
+        "EMBEDDER_MODEL": "nomic-embed-text"
+      }
+    }
+  }
+}
+```
+
+> ⚠️ **Important:** Replace `/full/path/to/allan-mcp-memory-code` with the actual absolute path.
+
+#### Step 2: Restart Claude Code & Verify
+
+1. Restart VS Code completely
+2. Type `/mcp` in Claude Code chat
+3. You should see `allan-memory` with 5 tools:
+   - `add_memory` - Store knowledge
+   - `search_nodes` - Search entities
+   - `search_facts` - Search relationships
+   - `get_episodes` - List episodes
+   - `delete_episode` - Delete episode
+
+#### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `add_memory` | Store knowledge (name, content, group_id) |
+| `search_nodes` | Search entities by query |
+| `search_facts` | Search relationships by query |
+| `get_episodes` | List recent episodes |
+| `delete_episode` | Delete episode by UUID |
+
+---
+
+### Claude Code (HTTP/curl Alternative)
+
+If MCP doesn't work, use HTTP API with curl commands.
 
 #### Step 1: Allow curl Commands
 
-Create or edit `~/.claude/settings.json`:
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -126,8 +179,6 @@ Create or edit `~/.claude/settings.json`:
   }
 }
 ```
-
-> 💡 **This allows curl commands to localhost:19089 without permission popups.**
 
 #### Step 2: Add Instructions to CLAUDE.md
 
@@ -155,70 +206,13 @@ You have access to a knowledge graph at http://localhost:19089.
 
 After editing settings, **restart Claude Code completely** for changes to take effect.
 
----
-
-### Claude Code (MCP Server - Alternative)
-
-If you want to use MCP tools instead of curl commands:
-
-#### MCP Server Config (`~/.claude/claude_desktop_config.json`)
-
-```json
-{
-  "mcpServers": {
-    "allan-memory": {
-      "command": "node",
-      "args": ["/full/path/to/allan-mcp-memory-code/lib/index.js"],
-      "env": {
-        "FALKORDB_URI": "redis://localhost:6380",
-        "LLM_API_URL": "http://localhost:11435/v1",
-        "LLM_API_KEY": "ollama",
-        "LLM_MODEL": "qwen2.5:7b-instruct",
-        "EMBEDDER_API_URL": "http://localhost:11435/v1",
-        "EMBEDDER_API_KEY": "ollama",
-        "EMBEDDER_MODEL": "nomic-embed-text"
-      }
-    }
-  },
-  "allowedTools": [
-    "mcp__allan-memory__*"
-  ]
-}
-```
-
-#### VS Code Settings Alternative
-
-Add to VS Code `settings.json`:
-
-```json
-{
-  "claude.mcpServers": {
-    "allan-memory": {
-      "command": "node",
-      "args": ["${userHome}/allan-mcp-memory-code/lib/index.js"],
-      "env": {
-        "FALKORDB_URI": "redis://localhost:6380",
-        "LLM_API_URL": "http://localhost:11435/v1",
-        "LLM_MODEL": "qwen2.5:7b-instruct",
-        "EMBEDDER_API_URL": "http://localhost:11435/v1",
-        "EMBEDDER_MODEL": "nomic-embed-text"
-      }
-    }
-  },
-  "claude.allowedTools": [
-    "mcp__allan-memory__*"
-  ]
-}
-```
-
-#### Troubleshooting Permission Popups
+#### Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Popup for `curl` commands | Add `"Bash(curl*)"` to `permissions.allow` in settings.json |
-| Popup for MCP tools | Add `"mcp__allan-memory__*"` to `allowedTools` |
-| Changes not working | Restart Claude Code completely |
-| Server not connecting | Verify Docker is running: `docker compose ps` |
+| MCP not showing in `/mcp` | Verify path is absolute, restart VS Code |
+| Popup for `curl` commands | Add `"Bash(curl*)"` to `permissions.allow` |
+| Server errors | Ensure Docker is running: `docker compose ps` |
 
 ---
 
@@ -231,7 +225,7 @@ Add to Cline MCP settings (`cline_mcp_settings.json`):
   "mcpServers": {
     "allan-memory": {
       "command": "node",
-      "args": ["/path/to/allan-mcp-memory-code/lib/index.js"],
+      "args": ["/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
       "env": {
         "FALKORDB_URI": "redis://localhost:6380",
         "LLM_API_URL": "http://localhost:11435/v1",
@@ -256,7 +250,7 @@ Add to Kilo Code MCP settings:
     "allan-memory": {
       "type": "stdio",
       "command": "node",
-      "args": ["/path/to/allan-mcp-memory-code/lib/index.js"],
+      "args": ["/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
       "env": {
         "FALKORDB_URI": "redis://localhost:6380",
         "LLM_API_URL": "http://localhost:11435/v1",
@@ -280,7 +274,7 @@ Add to Windsurf MCP settings:
   "mcpServers": {
     "allan-memory": {
       "command": "node",
-      "args": ["/path/to/allan-mcp-memory-code/lib/index.js"],
+      "args": ["/path/to/allan-mcp-memory-code/lib/mcp-server.js"],
       "env": {
         "FALKORDB_URI": "redis://localhost:6380",
         "LLM_API_URL": "http://localhost:11435/v1",
