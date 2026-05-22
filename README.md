@@ -340,6 +340,7 @@ You have MCP tools for persistent memory across sessions. **USE THEM PROACTIVELY
 
 ### IMPORTANT Rules:
 - ✅ ALWAYS search before answering codebase questions
+- ✅ WHEN search node or project not exist then create archictecture summary
 - ✅ ALWAYS store architectural discoveries
 - ✅ Use project name as `group_id` for namespacing
 - ❌ DON'T store trivial/temporary information
