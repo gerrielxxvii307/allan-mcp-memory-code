@@ -345,6 +345,31 @@ You have MCP tools for persistent memory across sessions. **USE THEM PROACTIVELY
 - ✅ Use project name as `group_id` for namespacing
 - ❌ DON'T store trivial/temporary information
 - ❌ DON'T duplicate existing knowledge (search first!)
+
+### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+**ALWAYS save to memory when:**
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| **Reading a file** | File purpose, key exports, dependencies |
+| **Reading a function** | Function name, purpose, params, return type |
+| **Reading a module** | Module structure, exports, relationships |
+| **Conversation compacting** | Full session summary before compaction |
+| **Understanding architecture** | Component relationships, data flow |
+| **Finding bugs** | Root cause, fix applied, prevention tips |
+| **Learning patterns** | Pattern name, when to use, example |
+| **Completing tasks** | What was done, decisions made, gotchas |
+
+**Format for saving:**
+- `name`: Brief title (e.g., "auth-service functions", "user-model schema")
+- `episode_body`: Detailed knowledge in markdown
+- `group_id`: Project/repo name for namespacing
+
+**Example saves:**
+- After reading `UserService.js` → Save: "UserService handles auth, CRUD, has 5 methods..."
+- After reading `database/` module → Save: "Database module uses Prisma, has models for..."
+- Before compaction → Save: "Session summary: Fixed auth bug, refactored API..."
 ```
 
 #### Step 3: Restart Claude Code
