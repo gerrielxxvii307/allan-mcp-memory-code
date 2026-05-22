@@ -597,6 +597,14 @@ You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
 
 Every 3-5 tool calls: "Did I save?" If no → save NOW.
+
+## Save After Read (MANDATORY)
+
+After `read_file`: `add_memory(name: "file:[project]:[path]", content: "path: x.js | purpose: ... | exports: ...")`
+
+After reading function: `add_memory(name: "func:[project]:[file]@[funcName]", content: "func: name(params) → return | does: ...")`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
@@ -705,6 +713,14 @@ You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 `explore → save → explore → save → plan → save → execute → save`
 
 Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
+
+## Save After Read (MANDATORY)
+
+After `read_file`: `add_memory(name: "file:[project]:[path]", content: "path: x.js | purpose: ... | exports: ...")`
+
+After reading function: `add_memory(name: "func:[project]:[file]@[funcName]", content: "func: name(params) → return | does: ...")`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
@@ -811,6 +827,13 @@ You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 `explore → save → explore → save → plan → save → execute → save`
 
 Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
+
+## Save After Read (MANDATORY)
+
+After `read_file`: `add_memory(name: "file:[project]:[path]", content: "...")`
+After reading function: `add_memory(name: "func:[project]:[file]@[funcName]", content: "...")`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
@@ -869,6 +892,13 @@ Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: applicat
 `explore → save → explore → save → plan → save → execute → save`
 
 Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
+
+## Save After Read (MANDATORY)
+
+After reading file: Store `file:[project]:[path]`
+After reading function: Store `func:[project]:[file]@[funcName]`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
@@ -922,6 +952,13 @@ Use @Allan Memory context provider. **Default: WRITE.** If unsure → save.
 curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"[type]:[project]:[scope]","episode_body":"[content]","group_id":"[project]"}'
 
 Save after EVERY action. Max 5 lines. Include identifiers.
+
+## Save After Read (MANDATORY)
+
+After reading file: `curl ... -d '{"name":"file:[project]:[path]",...}'`
+After reading function: `curl ... -d '{"name":"func:[project]:[file]@[funcName]",...}'`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
@@ -965,6 +1002,13 @@ Types: index, file, func, api, arch, pattern, task, debug
 4. After any action → save with proper naming
 
 Save after EVERY action. Max 5 lines. Include identifiers.
+
+## Save After Read (MANDATORY)
+
+After reading file: `curl ... -d '{"name":"file:[project]:[path]",...}'`
+After reading function: `curl ... -d '{"name":"func:[project]:[file]@[funcName]",...}'`
+
+**If you read it, you MUST save it.**
 ```
 
 ---
