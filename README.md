@@ -111,7 +111,44 @@ Use MCP tools directly in Claude Code - shows up in `/mcp` command.
 
 ---
 
-#### Option A: Full Offline (Local Ollama)
+#### Quick Add via CLI
+
+**Local (Ollama):**
+```bash
+claude mcp add allan-memory \
+  -e FALKORDB_URI=redis://localhost:6380 \
+  -e LLM_API_URL=http://localhost:11435/v1 \
+  -e LLM_API_KEY=ollama \
+  -e LLM_MODEL=qwen2.5:7b-instruct \
+  -e EMBEDDER_API_URL=http://localhost:11435/v1 \
+  -e EMBEDDER_API_KEY=ollama \
+  -e EMBEDDER_MODEL=nomic-embed-text \
+  -- node /full/path/to/allan-mcp-memory-code/lib/mcp-server.js
+```
+
+**Cloud (OpenRouter):**
+```bash
+claude mcp add allan-memory \
+  -e FALKORDB_URI=redis://localhost:6380 \
+  -e LLM_API_URL=https://openrouter.ai/api/v1 \
+  -e LLM_API_KEY=sk-or-v1-your-key-here \
+  -e LLM_MODEL=qwen/qwen-2.5-7b-instruct \
+  -e EMBEDDER_API_URL=https://openrouter.ai/api/v1 \
+  -e EMBEDDER_API_KEY=sk-or-v1-your-key-here \
+  -e EMBEDDER_MODEL=openai/text-embedding-3-small \
+  -- node /full/path/to/allan-mcp-memory-code/lib/mcp-server.js
+```
+
+> 💡 Replace `/full/path/to/allan-mcp-memory-code` with your actual path.
+
+**Remove MCP:**
+```bash
+claude mcp remove allan-memory
+```
+
+---
+
+#### Manual Config: Option A - Full Offline (Local Ollama)
 
 **Requirements:** Docker running with `docker compose up -d`
 
@@ -151,7 +188,7 @@ Add to VS Code `settings.json` (Cmd+Shift+P → "Preferences: Open User Settings
 
 ---
 
-#### Option B: Cloud (OpenRouter) - Low Resource
+#### Manual Config: Option B - Cloud (OpenRouter)
 
 **Requirements:** Only FalkorDB Docker + OpenRouter API key
 
@@ -196,7 +233,7 @@ Add to VS Code `settings.json`:
 
 ---
 
-#### Option C: Hybrid (Local Ollama + Cloud Embedding)
+#### Manual Config: Option C - Hybrid (Local LLM + Cloud Embedding)
 
 **Use case:** Save RAM by using cloud embeddings only
 
