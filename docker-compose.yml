@@ -12,6 +12,7 @@ services:
       - falkordb_data:/data
     environment:
       - FALKORDB_ARGS=--save 60 1 --loglevel warning
+      - ENCRYPTION_KEY=b32ac80ae71182ef56f388bd4fe9e1dbf5e6ba03ea80be29959e70cd87a3ec84
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -30,7 +31,7 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      test: ["CMD-SHELL", "ollama list || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -58,51 +59,51 @@ services:
   # ============================================
   # Allan Memory - Knowledge Graph Service
   # ============================================
-  allan-memory:
-    build: .
-    container_name: allan-memory
-    ports:
-      - "${PORT:-19089}:19089"
-    depends_on:
-      falkordb:
-        condition: service_healthy
-      ollama:
-        condition: service_healthy
-      ollama-init:
-        condition: service_completed_successfully
-    environment:
-      # Server
-      - PORT=19089
-      - NODE_ENV=production
+  # allan-memory:
+  #   build: .
+  #   container_name: allan-memory
+  #   ports:
+  #     - "${PORT:-19089}:19089"
+  #   depends_on:
+  #     falkordb:
+  #       condition: service_healthy
+  #     ollama:
+  #       condition: service_healthy
+  #     ollama-init:
+  #       condition: service_completed_successfully
+  #   environment:
+  #     # Server
+  #     - PORT=19089
+  #     - NODE_ENV=production
       
-      # FalkorDB
-      - FALKORDB_URI=redis://falkordb:6379
-      - FALKORDB_GRAPH_NAME=allan_memory
+  #     # FalkorDB
+  #     - FALKORDB_URI=redis://falkordb:6379
+  #     - FALKORDB_GRAPH_NAME=allan_memory
       
-      # LLM (OpenRouter / OpenAI Compatible)
-      - LLM_API_URL=https://openrouter.ai/api/v1
-      - LLM_API_KEY=${LLM_API_KEY:-your-openrouter-api-key}
-      - LLM_MODEL=${LLM_MODEL:-qwen/qwen3-30b-a3b}
+  #     # LLM (OpenRouter / OpenAI Compatible)
+  #     - LLM_API_URL=https://openrouter.ai/api/v1
+  #     - LLM_API_KEY=${LLM_API_KEY:-your-openrouter-api-key}
+  #     - LLM_MODEL=${LLM_MODEL:-qwen/qwen3-30b-a3b}
       
-      # Embedder (Ollama in container)
-      - EMBEDDER_API_URL=http://ollama:11434/v1
-      - EMBEDDER_API_KEY=ollama
-      - EMBEDDER_MODEL=nomic-embed-text
-      - EMBEDDER_DIMENSIONS=768
+  #     # Embedder (Ollama in container)
+  #     - EMBEDDER_API_URL=http://ollama:11434/v1
+  #     - EMBEDDER_API_KEY=ollama
+  #     - EMBEDDER_MODEL=nomic-embed-text
+  #     - EMBEDDER_DIMENSIONS=768
       
-      # Memory settings
-      - DEFAULT_GROUP_ID=main
-      - SEMAPHORE_LIMIT=2
+  #     # Memory settings
+  #     - DEFAULT_GROUP_ID=main
+  #     - SEMAPHORE_LIMIT=2
       
-      # Logging
-      - LOG_LEVEL=info
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:19089/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
+  #     # Logging
+  #     - LOG_LEVEL=info
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:19089/v1/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 10s
+  #   restart: unless-stopped
 
 volumes:
   falkordb_data:
