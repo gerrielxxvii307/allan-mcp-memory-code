@@ -33,11 +33,45 @@ curl http://localhost:19089/v1/health
 | `PORT` | 19089 | Service port |
 | `LLM_API_URL` | https://openrouter.ai/api/v1 | LLM endpoint |
 | `LLM_API_KEY` | - | OpenRouter/OpenAI API key |
-| `LLM_MODEL` | qwen/qwen3-30b-a3b | Model for entity extraction |
+| `LLM_MODEL` | qwen/qwen-2.5-7b-instruct | Model for entity extraction |
 | `EMBEDDER_API_URL` | http://ollama:11434/v1 | Embedding endpoint |
 | `EMBEDDER_MODEL` | nomic-embed-text | Embedding model |
 | `FALKORDB_GRAPH_NAME` | allan_memory | Graph name |
 | `LOG_LEVEL` | info | debug/info/warn/error |
+
+### LLM Model Best Practices
+
+For entity extraction, use **instruction-following models** that reliably output structured JSON. Avoid reasoning models.
+
+#### ✅ Recommended Models (OpenRouter)
+
+| Model | Size | Notes |
+|-------|------|-------|
+| `qwen/qwen-2.5-7b-instruct` | 7B | **Best choice** - Fast, cheap, reliable JSON output |
+| `google/gemma-3-4b-it` | 4B | Lightweight, wraps JSON in markdown |
+
+#### ❌ Models to Avoid
+
+| Model | Issue |
+|-------|-------|
+| `z-ai/glm-5.1` | Reasoning model - returns `content: null`, response in `reasoning` field |
+| `microsoft/phi-4-mini-instruct` | Doesn't follow structured JSON prompts, returns prose |
+| `meta-llama/llama-3.2-3b-instruct` | Inconsistent JSON formatting |
+
+#### Why Some Models Fail
+
+1. **Reasoning models** (e.g., `z-ai/glm-5.1`) return responses in a `reasoning` field instead of `content`, causing empty extraction
+2. **Small models** may not follow complex structured output instructions reliably
+3. **Code-focused models** may try to generate code instead of JSON data
+
+#### Local LLM (Ollama)
+
+For local deployment, use:
+```env
+LLM_API_URL=http://localhost:11434/v1
+LLM_API_KEY=ollama
+LLM_MODEL=qwen2.5:7b-instruct
+```
 
 ### Exposed Ports
 
