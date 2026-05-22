@@ -105,13 +105,63 @@ curl http://localhost:19089/v1/health
 
 ## Integration
 
-### Claude Code (MCP Server - No Permission Popup)
+### Claude Code (No Permission Popup)
 
-Claude Code supports MCP servers natively. Configure to **auto-approve** tools and avoid permission popups.
+Configure Claude Code to **auto-approve** curl commands for Allan Memory API.
 
-#### Step 1: Create MCP Server Config
+#### Step 1: Allow curl Commands
 
-Create or edit `~/.claude/claude_desktop_config.json`:
+Create or edit `~/.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl*)",
+      "Bash(curl -s*)",
+      "Bash(curl -X POST http://localhost:19089*)",
+      "Bash(curl http://localhost:19089*)"
+    ],
+    "deny": []
+  }
+}
+```
+
+> 💡 **This allows curl commands to localhost:19089 without permission popups.**
+
+#### Step 2: Add Instructions to CLAUDE.md
+
+Add to your `~/.claude/CLAUDE.md`:
+
+```markdown
+## Knowledge Graph (Allan Memory)
+
+You have access to a knowledge graph at http://localhost:19089.
+
+### When to READ:
+- Before answering codebase questions, search for stored knowledge
+- When starting work on a known project
+
+### When to WRITE:
+- After discovering architecture, patterns, or debugging insights
+- When user asks you to remember something
+
+### API:
+- Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"...","limit":10}'`
+- Store: `curl -s -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"...","episode_body":"...","group_id":"project-name"}'`
+```
+
+#### Step 3: Restart Claude Code
+
+After editing settings, **restart Claude Code completely** for changes to take effect.
+
+---
+
+### Claude Code (MCP Server - Alternative)
+
+If you want to use MCP tools instead of curl commands:
+
+#### MCP Server Config (`~/.claude/claude_desktop_config.json`)
 
 ```json
 {
@@ -131,20 +181,14 @@ Create or edit `~/.claude/claude_desktop_config.json`:
     }
   },
   "allowedTools": [
-    "mcp__allan-memory__add_memory",
-    "mcp__allan-memory__search_nodes",
-    "mcp__allan-memory__search_facts",
-    "mcp__allan-memory__get_episodes",
-    "mcp__allan-memory__delete_episode"
+    "mcp__allan-memory__*"
   ]
 }
 ```
 
-> ⚠️ **Important:** Replace `/full/path/to/allan-mcp-memory-code` with the actual path to your cloned repository.
+#### VS Code Settings Alternative
 
-#### Step 2: Alternative - Use settings.json (VS Code)
-
-For Claude Code in VS Code, add to your VS Code `settings.json`:
+Add to VS Code `settings.json`:
 
 ```json
 {
@@ -167,45 +211,14 @@ For Claude Code in VS Code, add to your VS Code `settings.json`:
 }
 ```
 
-> 💡 **Tip:** Use `"mcp__allan-memory__*"` to allow ALL tools from allan-memory without individual approval.
-
-#### Step 3: Add Instructions to CLAUDE.md
-
-Add to your `~/.claude/CLAUDE.md`:
-
-```markdown
-## Knowledge Graph (Allan Memory)
-
-You have access to a knowledge graph at http://localhost:19089.
-
-### When to READ:
-- Before answering codebase questions, search for stored knowledge
-- When starting work on a known project
-
-### When to WRITE:
-- After discovering architecture, patterns, or debugging insights
-- When user asks you to remember something
-
-### API:
-- Search: `curl -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"...","limit":10}'`
-- Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"...","episode_body":"...","group_id":"project-name"}'`
-```
-
-#### Step 4: Restart Claude Code
-
-After configuration:
-1. Completely quit Claude Code / VS Code
-2. Restart the application
-3. The MCP server should connect automatically without permission popups
-
 #### Troubleshooting Permission Popups
 
 | Issue | Solution |
 |-------|----------|
-| Still seeing popups | Check `allowedTools` includes all tool names |
-| Server not connecting | Verify the path in `args` is correct and absolute |
-| Tools not available | Ensure Docker services are running (`docker compose ps`) |
-| Permission denied | Run `chmod +x /path/to/lib/index.js` |
+| Popup for `curl` commands | Add `"Bash(curl*)"` to `permissions.allow` in settings.json |
+| Popup for MCP tools | Add `"mcp__allan-memory__*"` to `allowedTools` |
+| Changes not working | Restart Claude Code completely |
+| Server not connecting | Verify Docker is running: `docker compose ps` |
 
 ---
 
