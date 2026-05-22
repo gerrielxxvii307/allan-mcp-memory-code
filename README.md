@@ -482,6 +482,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 - Learning project conventions → Save for consistency
 - User says "remember" → Always store
 
+### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -558,6 +570,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 - Learning project conventions → Save for consistency
 - User says "remember" → Always store
 
+### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -632,6 +656,18 @@ You have MCP tools for persistent memory. **USE THEM PROACTIVELY!**
 - Learning project conventions → Save for consistency
 - User says "remember" → Always store
 
+### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
+
 ### Tools: search_nodes, search_facts, add_memory, get_episodes, delete_episode
 ```
 
@@ -673,6 +709,18 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 - Use project name as group_id for namespacing
 - DON'T store trivial/temporary information
 - DON'T duplicate existing knowledge (search first!)
+
+## 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
 ```
 
 ---
@@ -716,6 +764,18 @@ You have access to @Allan Memory context provider. **USE IT PROACTIVELY!**
 
 ### AUTO-WRITE - Do this after (via terminal curl):
 curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'
+
+### 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
 ```
 
 ---
@@ -756,6 +816,18 @@ curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json
 - Use project name as group_id for namespacing
 - DON'T store trivial/temporary information
 - DON'T duplicate existing knowledge (search first!)
+
+## 🔥 AGGRESSIVE AUTO-SAVE (Save Everything!)
+
+| Trigger Event | What to Save |
+|---------------|--------------|
+| Reading a file | File purpose, key exports, dependencies |
+| Reading a function | Function name, purpose, params, return type |
+| Reading a module | Module structure, exports, relationships |
+| Conversation compacting | Full session summary before compaction |
+| Understanding architecture | Component relationships, data flow |
+| Finding bugs | Root cause, fix applied, prevention tips |
+| Completing tasks | What was done, decisions made, gotchas |
 ```
 
 ---
