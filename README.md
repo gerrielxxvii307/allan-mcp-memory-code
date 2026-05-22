@@ -302,29 +302,80 @@ Add to `~/.claude/settings.json`:
 
 #### Step 2: Add Instructions to CLAUDE.md
 
-Add to your `~/.claude/CLAUDE.md`:
+Add to your `~/.claude/CLAUDE.md` to make Claude **auto-use** memory tools:
 
 ```markdown
-## Knowledge Graph (Allan Memory)
+## Knowledge Graph Memory (Allan Memory)
 
-You have access to a knowledge graph at http://localhost:19089.
+You have MCP tools for persistent memory across sessions. **USE THEM PROACTIVELY!**
 
-### When to READ:
-- Before answering codebase questions, search for stored knowledge
-- When starting work on a known project
+### 🔍 AUTO-READ (search_nodes/search_facts) - Do this FIRST:
+- **Architecture questions** → Search memory before answering
+- **"How does X work?"** → Search for existing knowledge
+- **Code review** → Search for known patterns/issues
+- **Starting work on project** → Search for stored context
+- **Debugging** → Search for similar past issues
 
-### When to WRITE:
-- After discovering architecture, patterns, or debugging insights
-- When user asks you to remember something
+### 💾 AUTO-WRITE (add_memory) - Do this after:
+- **Discovering architecture patterns** → Store immediately
+- **Finding root cause of bugs** → Remember for future
+- **Learning project conventions** → Save for consistency
+- **User says "remember"** → Always store
+- **Completing complex tasks** → Summarize learnings
 
-### API:
-- Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"...","limit":10}'`
-- Store: `curl -s -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"...","episode_body":"...","group_id":"project-name"}'`
+### Available MCP Tools:
+| Tool | When to Use |
+|------|-------------|
+| `search_nodes` | Find entities (people, tech, concepts) |
+| `search_facts` | Find relationships between entities |
+| `add_memory` | Store new knowledge |
+| `get_episodes` | List recent memory entries |
+| `delete_episode` | Remove outdated info |
+
+### Usage Pattern:
+1. **START of conversation**: `search_nodes` for project context
+2. **Before answering**: `search_nodes`/`search_facts` to check existing knowledge
+3. **After learning**: `add_memory` to store insights
+4. **End of session**: `add_memory` to summarize what was done
+
+### IMPORTANT Rules:
+- ✅ ALWAYS search before answering codebase questions
+- ✅ ALWAYS store architectural discoveries
+- ✅ Use project name as `group_id` for namespacing
+- ❌ DON'T store trivial/temporary information
+- ❌ DON'T duplicate existing knowledge (search first!)
 ```
 
 #### Step 3: Restart Claude Code
 
 After editing settings, **restart Claude Code completely** for changes to take effect.
+
+---
+
+### Prompt Tips for Auto-Triggering
+
+To make Claude use memory tools automatically, use these phrases:
+
+| Phrase in Prompt | Triggers |
+|------------------|----------|
+| "Check your memory first..." | `search_nodes` before answering |
+| "What do you remember about...?" | `search_nodes` |
+| "Remember this for later..." | `add_memory` |
+| "Search your knowledge of..." | `search_nodes` |
+| "What patterns have you seen in...?" | `search_facts` |
+| "Store this insight..." | `add_memory` |
+| "Before answering, check if..." | `search_nodes` |
+
+#### Example Prompts:
+```
+"Check your memory first, then explain the authentication flow"
+
+"What do you remember about the database schema?"
+
+"Remember this: the API uses JWT tokens with 24h expiry"
+
+"Search your knowledge of error handling patterns in this codebase"
+```
 
 #### Troubleshooting
 
