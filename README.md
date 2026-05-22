@@ -304,81 +304,114 @@ Add to `~/.claude/settings.json`:
 
 Add to your `~/.claude/CLAUDE.md` to make Claude **auto-use** memory tools:
 
-```markdown
+````markdown
 # Allan Memory (Graphiti MCP)
 
 You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
 
 ## Tools
-- `search_nodes` — find entities
+- `search_nodes` — find entities (search "index:[project]" FIRST)
 - `search_facts` — find relationships
 - `add_memory` — store (USE LIBERALLY)
 - `get_episodes` — list recent
 - `delete_episode` — remove stale
 
+## Naming Convention (TOKEN-EFFICIENT)
+
+Format: `[type]:[project]:[scope]`
+
+| Type | Example | Use For |
+|------|---------|---------|
+| index | index:my-project | Project overview (CREATE FIRST!) |
+| file | file:my-project:src/auth.js | File summary |
+| func | func:my-project:UserService.login | Function signature |
+| api | api:my-project:POST /auth/login | API endpoint |
+| arch | arch:my-project:overview | Architecture |
+| pattern | pattern:my-project:error-handling | Code pattern |
+| task | task:my-project:fix-login | Task summary |
+| debug | debug:my-project:auth-500 | Debug session |
+
+## Content Templates
+
+**INDEX (create FIRST per project):**
+```
+files: auth.js, api.js, models/user.js
+components: LoginForm, Header, Footer
+routes: /, /api/*, /auth/*
+patterns: JWT auth, Repository pattern
+key-funcs: login(), validateToken()
+```
+
+**FILE:**
+```
+path: src/services/auth.js
+purpose: Authentication service
+exports: login(), logout(), validateToken()
+deps: jwt-lib, redis
+lines: 245
+```
+
+**FUNCTION:**
+```
+func: login(email: str, pass: str) → User|null
+does: Validates credentials, returns user
+calls: hashPass(), findUser()
+called-by: AuthController.handle()
+```
+
+**API:**
+```
+POST /api/auth/login
+req: { email: str, password: str }
+res: { token: str, user: User }
+auth: none
+```
+
 ## Hard Rules
 
-**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case). No exceptions.
+**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
 
-**Search before answer:** any question about code, architecture, project state, past decisions, or bugs → `search_nodes` FIRST. Empty result = explore, then save what you find.
+**Search before answer:** `search_nodes("index:[project]")` FIRST. Empty = explore, then save.
 
-**Write after every action.** Not "after the task" — after EACH action below. One action = one `add_memory` call.
+**Write after every action.** One action = one `add_memory` call.
 
-| Action | Save (compressed, 1-3 lines) |
+| Action | Save |
 |---|---|
-| bash/shell command run | command + key output + what it revealed |
-| grep/find/search | pattern + matches + files touched |
-| ls / tree / explore dir | dir path + structure summary |
-| read file | path + purpose + key exports/functions |
-| read function | name + params + return + what it does |
-| edit/create file | path + what changed + why |
-| debug session | symptom + root cause + fix |
-| plan created | the plan, verbatim or summarized |
-| task completed | what + how + gotchas |
-| API/route discovered | method + path + req/resp shape |
-| pattern/convention learned | name + when to apply |
-| architecture insight | components + data flow |
-| user says "remember"/"ingat" | save exactly as stated |
+| bash/shell | command + output + revealed |
+| grep/search | pattern + matches + files |
+| ls/tree | path + structure |
+| read file | path + purpose + exports |
+| read function | name + params + return + does |
+| edit/create | path + what changed + why |
+| debug | symptom + root cause + fix |
+| plan | the plan summarized |
+| task done | what + how + gotchas |
 
-## Compression Rules (CRITICAL)
+## Compression Rules
 
-Memory entries are short, factual, queryable. NOT essays.
+- **Max 5 lines.** Split if longer.
+- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
+- **Drop filler.** No "I discovered". Just facts.
+- **Include identifiers.** File paths, function names, routes.
 
-- **Max 5 lines per entry.** If longer, split into multiple `add_memory` calls.
-- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go, validates via Redis session store."
-- **Drop filler:** no "I discovered", "it turns out", "interestingly". Just the fact.
-- **Include identifiers:** file paths, function names, route paths, error codes — always.
-- **Code snippets:** only if <10 lines AND essential. Otherwise describe + cite path.
-- **One concept per entry.** Don't bundle "auth + db + routing" into one memory.
-
-## Save Cadence (Aggressive)
+## Save Cadence
 
 `explore → save → explore → save → plan → save → execute → save → done → save`
 
-Not:
+Every 3-5 tool calls: "Did I save?" If no → save NOW.
 
-`explore → explore → explore → execute → execute → (forget to save) → done`
+## Workflow
 
-
-Every 3-5 tool calls, ask yourself: "Did I save what I just learned?" If no → save NOW before next action.
-
-## Session Boundaries
-
-- **Start:** `search_nodes` for project context. If empty for active project → flag it, explore, build baseline.
-- **Mid-session:** save incrementally (per rules above), don't batch.
-- **Before compaction:** save full session summary (decisions + open threads + next steps).
-- **End:** save outcome summary with `group_id`.
+1. User asks about project → `search_nodes("index:[project]")` FIRST
+2. Empty? → Explore → Create index entry → Then answer
+3. Found? → Use results, DON'T re-read files
+4. After any action → save with proper naming
 
 ## Don't Save
-- Trivial confirmations ("user said hi")
-- Exact duplicates (search first if unsure)
-- Transient state (current cursor position, scratch values)
-- Sensitive data (keys, tokens, passwords, full credentials)
-
-## Failure Mode to Avoid
-
-The #1 failure: doing 10 bash/grep/read calls in a row, then writing one giant summary at the end. This loses granularity and skips facts. **Save per action, not per task.**
-```
+- Trivial ("user said hi")
+- Duplicates (search first)
+- Sensitive data (keys, passwords)
+````
 
 #### Step 3: Restart Claude Code
 
@@ -476,44 +509,36 @@ Go to **Cline Settings → Custom Instructions** and add:
 ```markdown
 # Allan Memory (Graphiti MCP)
 
-You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
+You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 
-## Tools
-- `search_nodes` — find entities
-- `search_facts` — find relationships  
-- `add_memory` — store (USE LIBERALLY)
-- `get_episodes` — list recent
-- `delete_episode` — remove stale
+## Naming Convention: [type]:[project]:[scope]
+
+| Type | Example | Use For |
+|------|---------|---------|
+| index | index:my-project | Project overview (CREATE FIRST!) |
+| file | file:my-project:src/auth.js | File summary |
+| func | func:my-project:Service.method | Function signature |
+| api | api:my-project:POST /auth | API endpoint |
+
+## Content Templates
+
+**INDEX:** `files: a.js, b.js | components: X, Y | routes: /, /api`
+**FILE:** `path: x.js | purpose: Auth | exports: login(), logout()`
+**FUNC:** `func: login(email, pass) → User | does: Validates creds`
 
 ## Hard Rules
 
-**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
-
-**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
-
-**Write after every action.** One action = one `add_memory` call.
-
-| Action | Save (1-3 lines) |
-|---|---|
-| bash/shell command | command + output + what it revealed |
-| grep/find/search | pattern + matches + files |
-| ls/tree/explore | dir path + structure summary |
-| read file | path + purpose + key exports |
-| edit/create file | path + what changed + why |
-| debug session | symptom + root cause + fix |
-| plan created | the plan summarized |
-| task completed | what + how + gotchas |
-
-## Compression Rules
-
-- **Max 5 lines per entry.** Split if longer.
-- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
-- **Drop filler.** No "I discovered". Just facts.
-- **Include identifiers.** File paths, function names, routes.
+- `search_nodes("index:[project]")` FIRST before answering
+- Empty? → Explore → Create index → Then answer
+- Found? → Use results, DON'T re-read files
+- Save after EVERY action with proper naming
+- `group_id` = project name (kebab-case)
 
 ## Save Cadence
 
-`explore → save → explore → save → plan → save → execute → save → done → save`
+`explore → save → explore → save → plan → save → execute → save`
+
+Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
 
 Every 3-5 tool calls: "Did I save?" If no → save NOW.
 ```
@@ -577,46 +602,36 @@ Go to **Kilo Code Settings → Custom Instructions** and add:
 ```markdown
 # Allan Memory (Graphiti MCP)
 
-You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
+You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 
-## Tools
-- `search_nodes` — find entities
-- `search_facts` — find relationships  
-- `add_memory` — store (USE LIBERALLY)
-- `get_episodes` — list recent
-- `delete_episode` — remove stale
+## Naming Convention: [type]:[project]:[scope]
+
+| Type | Example | Use For |
+|------|---------|---------|
+| index | index:my-project | Project overview (CREATE FIRST!) |
+| file | file:my-project:src/auth.js | File summary |
+| func | func:my-project:Service.method | Function signature |
+| api | api:my-project:POST /auth | API endpoint |
+
+## Content Templates
+
+**INDEX:** `files: a.js, b.js | components: X, Y | routes: /, /api`
+**FILE:** `path: x.js | purpose: Auth | exports: login(), logout()`
+**FUNC:** `func: login(email, pass) → User | does: Validates creds`
 
 ## Hard Rules
 
-**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
-
-**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
-
-**Write after every action.** One action = one `add_memory` call.
-
-| Action | Save (1-3 lines) |
-|---|---|
-| bash/shell command | command + output + what it revealed |
-| grep/find/search | pattern + matches + files |
-| ls/tree/explore | dir path + structure summary |
-| read file | path + purpose + key exports |
-| edit/create file | path + what changed + why |
-| debug session | symptom + root cause + fix |
-| plan created | the plan summarized |
-| task completed | what + how + gotchas |
-
-## Compression Rules
-
-- **Max 5 lines per entry.** Split if longer.
-- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
-- **Drop filler.** No "I discovered". Just facts.
-- **Include identifiers.** File paths, function names, routes.
+- `search_nodes("index:[project]")` FIRST before answering
+- Empty? → Explore → Create index → Then answer
+- Found? → Use results, DON'T re-read files
+- Save after EVERY action with proper naming
+- `group_id` = project name (kebab-case)
 
 ## Save Cadence
 
-`explore → save → explore → save → plan → save → execute → save → done → save`
+`explore → save → explore → save → plan → save → execute → save`
 
-Every 3-5 tool calls: "Did I save?" If no → save NOW.
+Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
 ```
 
 ---
@@ -676,46 +691,36 @@ Go to **Windsurf Settings → AI Rules → Global AI Rules** and add:
 ```markdown
 # Allan Memory (Graphiti MCP)
 
-You have persistent memory via MCP. **Default: WRITE.** If unsure whether to save, save.
+You have persistent memory via MCP. **Default: WRITE.** If unsure → save.
 
-## Tools
-- `search_nodes` — find entities
-- `search_facts` — find relationships  
-- `add_memory` — store (USE LIBERALLY)
-- `get_episodes` — list recent
-- `delete_episode` — remove stale
+## Naming Convention: [type]:[project]:[scope]
+
+| Type | Example | Use For |
+|------|---------|---------|
+| index | index:my-project | Project overview (CREATE FIRST!) |
+| file | file:my-project:src/auth.js | File summary |
+| func | func:my-project:Service.method | Function signature |
+| api | api:my-project:POST /auth | API endpoint |
+
+## Content Templates
+
+**INDEX:** `files: a.js, b.js | components: X, Y | routes: /, /api`
+**FILE:** `path: x.js | purpose: Auth | exports: login(), logout()`
+**FUNC:** `func: login(email, pass) → User | does: Validates creds`
 
 ## Hard Rules
 
-**Namespacing:** every `add_memory` MUST include `group_id` = project name (kebab-case).
-
-**Search before answer:** any question about code/architecture → `search_nodes` FIRST. Empty = explore, then save.
-
-**Write after every action.** One action = one `add_memory` call.
-
-| Action | Save (1-3 lines) |
-|---|---|
-| bash/shell command | command + output + what it revealed |
-| grep/find/search | pattern + matches + files |
-| ls/tree/explore | dir path + structure summary |
-| read file | path + purpose + key exports |
-| edit/create file | path + what changed + why |
-| debug session | symptom + root cause + fix |
-| plan created | the plan summarized |
-| task completed | what + how + gotchas |
-
-## Compression Rules
-
-- **Max 5 lines per entry.** Split if longer.
-- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
-- **Drop filler.** No "I discovered". Just facts.
-- **Include identifiers.** File paths, function names, routes.
+- `search_nodes("index:[project]")` FIRST before answering
+- Empty? → Explore → Create index → Then answer
+- Found? → Use results, DON'T re-read files
+- Save after EVERY action with proper naming
+- `group_id` = project name (kebab-case)
 
 ## Save Cadence
 
-`explore → save → explore → save → plan → save → execute → save → done → save`
+`explore → save → explore → save → plan → save → execute → save`
 
-Every 3-5 tool calls: "Did I save?" If no → save NOW.
+Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
 ```
 
 ---
@@ -727,46 +732,41 @@ Create `.cursorrules` in your project root:
 ```markdown
 # Allan Memory (Graphiti MCP)
 
-API at http://localhost:19089. **Default: WRITE.** If unsure whether to save, save.
+API at http://localhost:19089. **Default: WRITE.** If unsure → save.
+
+## Naming: [type]:[project]:[scope]
+
+Types: index, file, func, api, arch, pattern, task, debug
+
+Examples:
+- index:my-project (CREATE FIRST!)
+- file:my-project:src/auth.js
+- func:my-project:Service.login
 
 ## Commands
-- Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"<topic>","limit":5}'`
-- Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"<title>","episode_body":"<knowledge>","group_id":"<project>"}'`
 
-## Hard Rules
+Search: `curl -s -X POST http://localhost:19089/v1/memory/search/nodes -H "Content-Type: application/json" -d '{"query":"index:[project]","limit":5}'`
 
-**Namespacing:** every store MUST include `group_id` = project name (kebab-case).
+Store: `curl -X POST http://localhost:19089/v1/memory -H "Content-Type: application/json" -d '{"name":"[type]:[project]:[scope]","episode_body":"[content]","group_id":"[project]"}'`
 
-**Search before answer:** any question about code/architecture → search FIRST. Empty = explore, then save.
+## Content Templates
 
-**Write after every action.** One action = one store call.
+**INDEX:** `files: a.js, b.js | components: X, Y | routes: /, /api`
+**FILE:** `path: x.js | purpose: Auth | exports: login(), logout()`
+**FUNC:** `func: login(email, pass) → User | does: Validates creds`
 
-| Action | Save (1-3 lines) |
-|---|---|
-| bash/shell command | command + output + what it revealed |
-| grep/find/search | pattern + matches + files |
-| ls/tree/explore | dir path + structure summary |
-| read file | path + purpose + key exports |
-| edit/create file | path + what changed + why |
-| debug session | symptom + root cause + fix |
-| plan created | the plan summarized |
-| task completed | what + how + gotchas |
+## Workflow
 
-## Compression Rules
-
-- **Max 5 lines per entry.** Split if longer.
-- **Subject + verb + object.** "Auth uses JWT in middleware/auth.go"
-- **Drop filler.** No "I discovered". Just facts.
-- **Include identifiers.** File paths, function names, routes.
+1. Search "index:[project]" FIRST
+2. Empty? → Explore → Create index → Answer
+3. Found? → Use results, DON'T re-read files
+4. After any action → save with proper naming
 
 ## Save Cadence
 
-`explore → save → explore → save → plan → save → execute → save → done → save`
+`explore → save → explore → save → plan → save → execute → save`
 
-Every 3-5 tool calls: "Did I save?" If no → save NOW.
-- Debug/troubleshoot → Save problem & solution
-
-**Flow:** search → if empty → explore → SAVE → do task → SAVE
+Max 5 lines. Subject+verb+object. Drop filler. Include identifiers.
 ```
 
 ---
