@@ -424,6 +424,28 @@ Every 3-5 tool calls: "Did I save?" If no → save NOW.
 3. Found? → Use results, DON'T re-read files
 4. After any action → save with proper naming
 
+## Save After Read (MANDATORY)
+
+After `read_file` or `cat`:
+```
+add_memory(
+  name: "file:[project]:[path]",
+  content: "path: x.js | purpose: ... | exports: ...",
+  group_id: "[project]"
+)
+```
+
+After reading a function:
+```
+add_memory(
+  name: "func:[project]:[file]@[funcName]",
+  content: "func: name(params) → return | does: ...",
+  group_id: "[project]"
+)
+```
+
+**If you read it, you MUST save it. No exceptions.**
+
 ## Don't Save
 - Trivial ("user said hi")
 - Duplicates (search first)
