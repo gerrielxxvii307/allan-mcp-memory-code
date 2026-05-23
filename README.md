@@ -113,15 +113,74 @@ Use MCP tools directly in Claude Code - shows up in `/mcp` command.
 
 ---
 
-#### Step 1: Install & Build
+#### Step 1: Prerequisites
 
 ```bash
+# Start FalkorDB
+docker compose up falkordb -d
+
+# Install & build allan-memory
 cd allan-mcp-memory-code
 npm install
 npm run build
+npm link
 ```
 
-#### Step 2: Add MCP Server
+#### Step 2: Setup Claude Code Config
+
+Copy the ready-made config files from `coding-plan/`:
+
+```bash
+# Copy hooks + CLAUDE.md
+cp -r coding-plan/.claude ~/.claude
+chmod +x ~/.claude/hooks/observe-read.sh ~/.claude/hooks/observe-edit.sh
+```
+
+Then edit the hook scripts — replace the placeholder env vars with your actual values:
+
+| Cloud (OpenRouter) | Local (Ollama) |
+|---|---|
+| `LLM_API_URL=https://openrouter.ai/api/v1` | `LLM_API_URL=http://localhost:11435/v1` |
+| `LLM_API_KEY=sk-or-v1-your-key-here` | `LLM_API_KEY=ollama` |
+| `LLM_MODEL=qwen/qwen-2.5-7b-instruct` | `LLM_MODEL=qwen2.5:7b-instruct` |
+| `EMBEDDER_API_URL=https://openrouter.ai/api/v1` | `EMBEDDER_API_URL=http://localhost:11435/v1` |
+| `EMBEDDER_API_KEY=sk-or-v1-your-key-here` | `EMBEDDER_API_KEY=ollama` |
+| `EMBEDDER_MODEL=openai/text-embedding-3-small` | `EMBEDDER_MODEL=nomic-embed-text` |
+
+Add the `hooks` section to `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/YOUR_USER/.claude/hooks/observe-read.sh",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/YOUR_USER/.claude/hooks/observe-edit.sh",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+> Replace `/Users/YOUR_USER` with your actual home directory path.
+
+#### Step 3: Add MCP Server
 
 **Local (Ollama):**
 ```bash
@@ -172,7 +231,7 @@ claude mcp remove allan-memory
 
 ---
 
-#### Step 3: Verify
+#### Step 4: Verify
 
 1. **Restart VS Code** completely (Cmd+Q, not just reload window)
 2. Type `/mcp` in Claude Code chat
@@ -409,104 +468,9 @@ allan-memory status                       # Check connection
 
 > 💡 The CLI uses pre-compiled code (`dist/`) - no babel needed at runtime!
 
-### Claude Code Hooks (Auto-Memory)
-
-Add to `~/.claude/settings.json` to auto-remember files when Claude reads or edits.
-
-> **Important:** Claude Code passes tool data via **stdin as JSON** (not as args). The hook scripts read stdin to extract `file_path`. Template variables like `${tool_input.file_path}` do **not** work in hook args.
-
-#### Step 1: Copy ready-made config from coding-plan
-
-The `coding-plan/` folder contains ready-to-use config files:
-
-```
-coding-plan/.claude/
-├── CLAUDE.md              # Instructions for Claude to auto-use memory
-└── hooks/
-    ├── observe-read.sh     # Hook for Read tool
-    └── observe-edit.sh     # Hook for Edit/Write/MultiEdit tools
-```
-
-Copy to your home directory:
-
-```bash
-cp -r coding-plan/.claude ~/.claude
-chmod +x ~/.claude/hooks/observe-read.sh ~/.claude/hooks/observe-edit.sh
-```
-
-#### Step 2: Replace env vars in the hook scripts
-
-Edit `~/.claude/hooks/observe-read.sh` and `~/.claude/hooks/observe-edit.sh` — replace the placeholders:
-
-| Cloud (OpenRouter) | Local (Ollama) |
-|---|---|
-| `LLM_API_URL=https://openrouter.ai/api/v1` | `LLM_API_URL=http://localhost:11435/v1` |
-| `LLM_API_KEY=sk-or-v1-your-key-here` | `LLM_API_KEY=ollama` |
-| `LLM_MODEL=qwen/qwen-2.5-7b-instruct` | `LLM_MODEL=qwen2.5:7b-instruct` |
-| `EMBEDDER_API_URL=https://openrouter.ai/api/v1` | `EMBEDDER_API_URL=http://localhost:11435/v1` |
-| `EMBEDDER_API_KEY=sk-or-v1-your-key-here` | `EMBEDDER_API_KEY=ollama` |
-| `EMBEDDER_MODEL=openai/text-embedding-3-small` | `EMBEDDER_MODEL=nomic-embed-text` |
-
-#### Step 3: Add hooks to settings.json
-
-Add the `hooks` section to `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/YOUR_USER/.claude/hooks/observe-read.sh",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/YOUR_USER/.claude/hooks/observe-edit.sh",
-            "timeout": 60
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-> Replace `/Users/YOUR_USER` with your actual home directory path.
-
-#### Step 4: Copy CLAUDE.md (optional but recommended)
-
-The `CLAUDE.md` file instructs Claude to auto-use memory tools. It's already included in the `cp` command above. If you have an existing `~/.claude/CLAUDE.md`, merge the content manually.
-
-**Requirements:**
-- `npm install && npm link` in allan-memory directory
-- FalkorDB running (`docker compose up falkordb -d`)
-- Python 3 installed (used to parse stdin JSON)
-
-**CLI Options:**
-- `--quiet` - Suppress console output (recommended for hooks)
-- `--verbose` - Show detailed output (for debugging)
-- `--group <id>` - Override auto-detected project group
-
-## Don't Save
-- Trivial ("user said hi")
-- Duplicates (search first)
-- Sensitive data (keys, passwords)
-````
-
-#### Step 3: Restart Claude Code
-
-After editing settings, **restart Claude Code completely** for changes to take effect.
-
 ---
+
+### Claude Code (HTTP/curl Alternative)
 
 ### Prompt Tips for Auto-Triggering
 
