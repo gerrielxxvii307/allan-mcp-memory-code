@@ -109,9 +109,19 @@ curl http://localhost:19089/v1/health
 
 Use MCP tools directly in Claude Code - shows up in `/mcp` command.
 
+> **Important:** Always use `claude mcp add` to configure the MCP server. Do **NOT** manually edit `~/.claude/settings.json` or `~/.claude/mcp.json` for MCP config. Claude Code reads MCP settings from `~/.claude.json` (managed by the CLI), not from those files. Editing the wrong file will cause "Connection closed" errors.
+
 ---
 
-#### Quick Add via CLI
+#### Step 1: Install & Build
+
+```bash
+cd allan-mcp-memory-code
+npm install
+npm run build
+```
+
+#### Step 2: Add MCP Server
 
 **Local (Ollama):**
 ```bash
@@ -130,6 +140,7 @@ claude mcp add allan-memory \
 ```bash
 claude mcp add allan-memory \
   -e FALKORDB_URI=redis://localhost:6380 \
+  -e FALKORDB_GRAPH_NAME=allan_memory \
   -e LLM_API_URL=https://openrouter.ai/api/v1 \
   -e LLM_API_KEY=sk-or-v1-your-key-here \
   -e LLM_MODEL=qwen/qwen-2.5-7b-instruct \
@@ -139,7 +150,20 @@ claude mcp add allan-memory \
   -- node /full/path/to/allan-mcp-memory-code/dist/mcp-server.js
 ```
 
-> 💡 Replace `/full/path/to/allan-mcp-memory-code` with your actual path.
+**Hybrid (Local LLM + Cloud Embedding):**
+```bash
+claude mcp add allan-memory \
+  -e FALKORDB_URI=redis://localhost:6380 \
+  -e LLM_API_URL=http://localhost:11435/v1 \
+  -e LLM_API_KEY=ollama \
+  -e LLM_MODEL=qwen2.5:7b-instruct \
+  -e EMBEDDER_API_URL=https://openrouter.ai/api/v1 \
+  -e EMBEDDER_API_KEY=sk-or-v1-your-key-here \
+  -e EMBEDDER_MODEL=openai/text-embedding-3-small \
+  -- node /full/path/to/allan-mcp-memory-code/dist/mcp-server.js
+```
+
+> Replace `/full/path/to/allan-mcp-memory-code` with your actual path. The path must point to `dist/mcp-server.js`, **not** `lib/mcp-server.js`.
 
 **Remove MCP:**
 ```bash
@@ -148,130 +172,20 @@ claude mcp remove allan-memory
 
 ---
 
-#### Manual Config: Option A - Full Offline (Local Ollama)
+#### Step 3: Verify
 
-**Requirements:** Docker running with `docker compose up -d`
+1. **Restart VS Code** completely (Cmd+Q, not just reload window)
+2. Type `/mcp` in Claude Code chat
+3. You should see `allan-memory` with 6 tools
 
-Add to VS Code `settings.json` (Cmd+Shift+P → "Preferences: Open User Settings (JSON)"):
+**Troubleshooting:**
 
-```json
-{
-  "claude.mcpServers": {
-    "allan-memory": {
-      "command": "node",
-      "args": ["/full/path/to/allan-mcp-memory-code/dist/mcp-server.js"],
-      "env": {
-        "FALKORDB_URI": "redis://localhost:6380",
-        "LLM_API_URL": "http://localhost:11435/v1",
-        "LLM_API_KEY": "ollama",
-        "LLM_MODEL": "qwen2.5:7b-instruct",
-        "EMBEDDER_API_URL": "http://localhost:11435/v1",
-        "EMBEDDER_API_KEY": "ollama",
-        "EMBEDDER_MODEL": "nomic-embed-text"
-      }
-    }
-  }
-}
-```
-
-| Variable | Value | Notes |
-|----------|-------|-------|
-| `FALKORDB_URI` | `redis://localhost:6380` | FalkorDB from Docker |
-| `LLM_API_URL` | `http://localhost:11435/v1` | Ollama from Docker |
-| `LLM_API_KEY` | `ollama` | Any value (Ollama ignores it) |
-| `LLM_MODEL` | `qwen2.5:7b-instruct` | Downloaded by Docker |
-| `EMBEDDER_API_URL` | `http://localhost:11435/v1` | Same Ollama |
-| `EMBEDDER_API_KEY` | `ollama` | Any value |
-| `EMBEDDER_MODEL` | `nomic-embed-text` | Downloaded by Docker |
-
-> 💡 **No API keys needed!** Just run `docker compose up -d` first.
-
----
-
-#### Manual Config: Option B - Cloud (OpenRouter)
-
-**Requirements:** Only FalkorDB Docker + OpenRouter API key
-
-```bash
-# Start only FalkorDB
-docker compose up falkordb -d
-```
-
-Add to VS Code `settings.json`:
-
-```json
-{
-  "claude.mcpServers": {
-    "allan-memory": {
-      "command": "node",
-      "args": ["/full/path/to/allan-mcp-memory-code/dist/mcp-server.js"],
-      "env": {
-        "FALKORDB_URI": "redis://localhost:6380",
-        "LLM_API_URL": "https://openrouter.ai/api/v1",
-        "LLM_API_KEY": "sk-or-v1-your-key-here",
-        "LLM_MODEL": "qwen/qwen-2.5-7b-instruct",
-        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
-        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
-        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
-      }
-    }
-  }
-}
-```
-
-| Variable | Value | Notes |
-|----------|-------|-------|
-| `FALKORDB_URI` | `redis://localhost:6380` | FalkorDB from Docker |
-| `LLM_API_URL` | `https://openrouter.ai/api/v1` | OpenRouter API |
-| `LLM_API_KEY` | `sk-or-v1-xxx` | **Required!** Get from openrouter.ai |
-| `LLM_MODEL` | `qwen/qwen-2.5-7b-instruct` | ~$0.003/hour |
-| `EMBEDDER_API_URL` | `https://openrouter.ai/api/v1` | OpenRouter API |
-| `EMBEDDER_API_KEY` | `sk-or-v1-xxx` | Same key |
-| `EMBEDDER_MODEL` | `openai/text-embedding-3-small` | OpenAI embedding |
-
-> ⚠️ **API key required!** Get from [openrouter.ai](https://openrouter.ai)
-
----
-
-#### Manual Config: Option C - Hybrid (Local LLM + Cloud Embedding)
-
-**Use case:** Save RAM by using cloud embeddings only
-
-```json
-{
-  "claude.mcpServers": {
-    "allan-memory": {
-      "command": "node",
-      "args": ["/full/path/to/allan-mcp-memory-code/dist/mcp-server.js"],
-      "env": {
-        "FALKORDB_URI": "redis://localhost:6380",
-        "LLM_API_URL": "http://localhost:11435/v1",
-        "LLM_API_KEY": "ollama",
-        "LLM_MODEL": "qwen2.5:7b-instruct",
-        "EMBEDDER_API_URL": "https://openrouter.ai/api/v1",
-        "EMBEDDER_API_KEY": "sk-or-v1-your-key-here",
-        "EMBEDDER_MODEL": "openai/text-embedding-3-small"
-      }
-    }
-  }
-}
-```
-
----
-
-#### Verify Installation
-
-1. **Replace path:** Change `/full/path/to/allan-mcp-memory-code` to your actual path
-2. **Important:** The MCP path must point to `dist/mcp-server.js` (transpiled), **not** `lib/mcp-server.js` (ESM source). Using `lib/` will crash with `SyntaxError: Cannot use import statement outside a module`.
-3. **Check both config files:** Claude Code reads MCP config from two locations:
-   - `~/.claude/settings.json` (under `claude.mcpServers`)
-   - `~/.claude/mcp.json` (under `mcpServers`)
-
-   If either file has the wrong path, the MCP server will fail. Verify **both** files point to `dist/mcp-server.js`.
-
-4. **Restart VS Code** completely (Cmd+Q, not just reload window)
-5. Type `/mcp` in Claude Code chat
-6. You should see `allan-memory` with 6 tools
+| Issue | Solution |
+|-------|----------|
+| "Connection closed" error | You likely edited `~/.claude/settings.json` manually. Run `claude mcp remove allan-memory` then re-add with `claude mcp add` |
+| "SyntaxError: Cannot use import" | Path points to `lib/` instead of `dist/`. Use `dist/mcp-server.js` |
+| MCP shows but tools don't work | FalkorDB not running. Start it: `docker compose up falkordb -d` |
+| MCP not showing in `/mcp` | Run `claude mcp list` to verify it's registered |
 
 #### Available MCP Tools
 
@@ -501,63 +415,28 @@ Add to `~/.claude/settings.json` to auto-remember files when Claude reads or edi
 
 > **Important:** Claude Code passes tool data via **stdin as JSON** (not as args). The hook scripts read stdin to extract `file_path`. Template variables like `${tool_input.file_path}` do **not** work in hook args.
 
-#### Step 1: Create Hook Scripts
+#### Step 1: Copy ready-made config from coding-plan
 
-Create the directory and scripts:
+The `coding-plan/` folder contains ready-to-use config files:
 
-```bash
-mkdir -p ~/.claude/hooks
+```
+coding-plan/.claude/
+├── CLAUDE.md              # Instructions for Claude to auto-use memory
+└── hooks/
+    ├── observe-read.sh     # Hook for Read tool
+    └── observe-edit.sh     # Hook for Edit/Write/MultiEdit tools
 ```
 
-**`~/.claude/hooks/observe-read.sh`:**
+Copy to your home directory:
 
 ```bash
-#!/bin/bash
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null)
-
-[ -z "$FILE_PATH" ] && exit 0
-
-FALKORDB_URI=redis://localhost:6380 \
-FALKORDB_GRAPH_NAME=allan_memory \
-LLM_API_URL=YOUR_LLM_API_URL \
-LLM_API_KEY=YOUR_LLM_API_KEY \
-LLM_MODEL=YOUR_LLM_MODEL \
-EMBEDDER_API_URL=YOUR_EMBEDDER_API_URL \
-EMBEDDER_API_KEY=YOUR_EMBEDDER_API_KEY \
-EMBEDDER_MODEL=YOUR_EMBEDDER_MODEL \
-allan-memory observe-read --file "$FILE_PATH" --quiet
-```
-
-**`~/.claude/hooks/observe-edit.sh`:**
-
-```bash
-#!/bin/bash
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null)
-
-[ -z "$FILE_PATH" ] && exit 0
-
-FALKORDB_URI=redis://localhost:6380 \
-FALKORDB_GRAPH_NAME=allan_memory \
-LLM_API_URL=YOUR_LLM_API_URL \
-LLM_API_KEY=YOUR_LLM_API_KEY \
-LLM_MODEL=YOUR_LLM_MODEL \
-EMBEDDER_API_URL=YOUR_EMBEDDER_API_URL \
-EMBEDDER_API_KEY=YOUR_EMBEDDER_API_KEY \
-EMBEDDER_MODEL=YOUR_EMBEDDER_MODEL \
-allan-memory observe-edit --file "$FILE_PATH" --quiet
-```
-
-Then make them executable:
-
-```bash
+cp -r coding-plan/.claude ~/.claude
 chmod +x ~/.claude/hooks/observe-read.sh ~/.claude/hooks/observe-edit.sh
 ```
 
-#### Step 2: Replace env vars in the scripts
+#### Step 2: Replace env vars in the hook scripts
 
-Replace these placeholders with your actual values:
+Edit `~/.claude/hooks/observe-read.sh` and `~/.claude/hooks/observe-edit.sh` — replace the placeholders:
 
 | Cloud (OpenRouter) | Local (Ollama) |
 |---|---|
@@ -568,9 +447,9 @@ Replace these placeholders with your actual values:
 | `EMBEDDER_API_KEY=sk-or-v1-your-key-here` | `EMBEDDER_API_KEY=ollama` |
 | `EMBEDDER_MODEL=openai/text-embedding-3-small` | `EMBEDDER_MODEL=nomic-embed-text` |
 
-#### Step 3: Add to settings.json
+#### Step 3: Add hooks to settings.json
 
-Add to `~/.claude/settings.json`:
+Add the `hooks` section to `~/.claude/settings.json`:
 
 ```json
 {
@@ -603,7 +482,9 @@ Add to `~/.claude/settings.json`:
 
 > Replace `/Users/YOUR_USER` with your actual home directory path.
 
-This automatically stores file summaries when Claude reads or edits files.
+#### Step 4: Copy CLAUDE.md (optional but recommended)
+
+The `CLAUDE.md` file instructs Claude to auto-use memory tools. It's already included in the `cp` command above. If you have an existing `~/.claude/CLAUDE.md`, merge the content manually.
 
 **Requirements:**
 - `npm install && npm link` in allan-memory directory
